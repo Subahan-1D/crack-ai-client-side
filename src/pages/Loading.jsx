@@ -8,7 +8,7 @@ const Loading = () => {
       <div className="max-w-[250px]">
         <Lottie animationData={loading}></Lottie>
       </div>
-      <h2 className="text-6xl">ADING</h2>
+      <h2 className="text-6xl">AIDING</h2>
     </div>
   );
 };

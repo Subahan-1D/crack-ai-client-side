@@ -1,5 +1,6 @@
 import { useRouteError } from "react-router-dom";
 import Header from "../components/Header";
+import img from "../assets/404.gif"
 
 const Error = () => {
   const error = useRouteError();
@@ -7,7 +8,9 @@ const Error = () => {
   return (
     <div>
       <Header></Header>
-      <div className="flex min-h-screen items-center justify-center">Error</div>
+      <div className="flex min-h-screen items-center justify-center">
+        <img src={img} alt="" />
+      </div>
     </div>
   );
 };

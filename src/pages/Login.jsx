@@ -64,6 +64,7 @@ const Login = () => {
         console.log(err);
       });
   };
+
   return (
     <div className=" bg-[url(/bg.png)] bg-contain ">
       <div className=" bg-white bg-opacity-90 min-h-screen">
