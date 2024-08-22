@@ -1,35 +1,78 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Title from "../components/Title";
 import Loading from "./Loading";
+import Swal from "sweetalert2";
+import axios from "axios";
+import { AuthContext } from "../providers/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 const Generate = () => {
-  const [images, setImages] = useState([]);
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [activeCat, setActiveCat] = useState();
+  const [activeType, setActiveType] = useState();
   const [loading, setLoading] = useState(false);
-  const handleSubmit = (e) => {
-    setLoading(true);
-    e.preventDefault();
-    console.log(e.target.prompt.value);
-    const form = new FormData();
-    form.append("prompt", e.target.prompt.value);
 
-    fetch("https://clipdrop-api.co/text-to-image/v1", {
-      method: "POST",
-      headers: {
-        "x-api-key":
-          "f2f895b187d72d4ae414127a69200eac032460d1e70f5f85006eb82b09c4bd58a9a29abbb1ac1c12482505c0a27b8ceb",
-      },
-      body: form,
-    })
-      .then((response) => response.arrayBuffer())
-      .then((buffer) => {
-        console.log(buffer);
-        const blob = new Blob([buffer], { type: "image/jpeg" });
-        const image_url = URL.createObjectURL(blob);
-        setImages([image_url, ...images]);
-        setLoading(false);
+  const painting_types = [
+    "Oil Painting",
+    "Watercolor Painting",
+    "Acrylic Painting",
+    "Pastel Painting",
+    "Gouache Painting",
+    "Encaustic Painting",
+    "Fresco Painting",
+    "Impasto Painting",
+    "Miniature Painting",
+    "Abstract Painting",
+    "Realistic/Representational Painting",
+  ];
+  const painting_categories = [
+    "Colorful ",
+    "Black and White ",
+    "Monochromatic ",
+    "Landscape ",
+    "Portrait ",
+    "Still Life ",
+    "Abstract ",
+    "Impressionistic ",
+    "Surrealistic ",
+    "Realistic ",
+  ];
+
+  const handleSubmit = (e) => {
+    const prompt = e.target.prompt.value;
+    e.preventDefault();
+    if (!activeCat) {
+      return Swal.fire("error", "please choose a Category", "error");
+    }
+    if (!activeType) {
+      return Swal.fire("error", "please choose a Type", "error");
+    }
+    if (prompt.length < 10) {
+      return Swal.fire(
+        "error",
+        "add minimum 10 -30 Character . not more",
+        "error"
+      );
+    }
+
+    setLoading(true);
+    axios
+      .post("http://localhost:9000/paintings/generate", {
+        prompt,
+        type: activeType,
+        category: activeCat,
+        email: user?.email,
+      })
+      .then((res) => {
+        if (res?.data?.insertedId) {
+          Swal.fire("great", "paintings generator", "success");
+          navigate(`/paintings/${res?.data?.insertedId}`);
+          setLoading(false)
+        }
       });
   };
-  if(loading) return <Loading></Loading>
+  if (loading) return <Loading></Loading>;
   return (
     <div className="container">
       <Title>Generate Paintings</Title>
@@ -46,13 +89,33 @@ const Generate = () => {
         />
         <button className="btn btn-primary ">Generate</button>
       </form>
-      <div className="grid lg:grid-cols-4 gap-5 mt-10">
-        {images.map((image) => (
-          <div>
-            <img className="border-8 w-full p-5 " src={image} alt="" />
+      <div className="grid md:grid-cols-2 pt-10">
+        <div className="">
+          <h2 className="text-xl font-bold">Choose A Categoory</h2>
+          <div className="space-x-5 space-y-3">
+            {painting_categories.map((cat) => (
+              <button
+                className={`${activeCat == cat && "bg-orange-400"}`}
+                onClick={() => setActiveCat(cat)}
+                key={cat}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
-        ))}
-        ;
+        </div>
+        <div className="space-x-5 space-y-3">
+          <h2 className="text-xl font-bold">Choose A Color Type</h2>
+          {painting_types.map((type) => (
+            <button
+              className={`${activeType == type && "bg-orange-400"}`}
+              onClick={() => setActiveType(type)}
+              key={type}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
